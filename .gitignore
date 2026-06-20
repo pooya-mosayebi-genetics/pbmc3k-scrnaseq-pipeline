@@ -1,0 +1,61 @@
+# ==============================================================================
+# .gitignore for scRNA-seq Analysis Project
+# ==============================================================================
+
+# --- Jupyter Notebook ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# --- Virtual Environments ---
+venv/
+env/
+ENV/
+.venv/
+
+# --- Data Files (too large for GitHub - max 100MB per file) ---
+*.h5ad
+*.h5
+*.mtx
+*.csv
+*.tsv
+*.loom
+*.rds
+*.RData
+
+# --- Large Figures (keep only key ones in figures/) ---
+figures/*.pdf
+figures/*_temp*
+figures/*_raw*
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Scanpy & Logging ---
+scanpy_logs/
+*.log
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Temporary Files ---
+*.tmp
+*.bak
+*.cache
