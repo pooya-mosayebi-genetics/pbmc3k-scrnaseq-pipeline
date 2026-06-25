@@ -1,93 +1,27 @@
-# Single-Cell RNA-seq Analysis of 10x Genomics PBMC 3k Dataset
+# scRNA-seq Analysis of 10x Genomics PBMC 3k Dataset
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Scanpy 1.9+](https://img.shields.io/badge/scanpy-1.9+-orange.svg)](https://scanpy.readthedocs.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Jupyter Notebook](https://img.shields.io/badge/Jupyter-Notebook-f37626.svg)](https://jupyter.org/)
-
----
-## 👤 Author
-
-**[Pooya Mosayebi]**  
+**Pooya Mosayebi**  
 MSc Student in Genetics and Bioinformatics  
-[Email](pooya.mosayebi.genetics@gmail.com) | [Your GitHub]
----
+pooya.mosayebi.genetics@gmail.com | https://github.com/pooya-mosayebi-genetics
 
-## 📋 Overview
+## Overview
 
-This repository contains a complete, reproducible pipeline for analyzing single-cell RNA sequencing (scRNA-seq) data from the **10x Genomics 3k PBMC dataset**. The analysis follows best practices in computational biology, emphasizing biological interpretability, computational efficiency, and reproducibility.
+This repository documents an scRNA-seq analysis workflow applied to the 10x Genomics PBMC 3k benchmark dataset. The primary objective was to establish a reproducible baseline pipeline for immune cell profiling using Scanpy, focusing on identifying major cell populations and exploring T-cell heterogeneity. All analytical decisions, including QC thresholds and clustering parameters, are documented inline within the Jupyter notebook.
 
-**Project Status:** ✅ Complete & Validated
+## Pipeline Summary & Analytical Rationale
 
----
+| Step | Method | Rationale / Notes |
+|------|--------|-------------------|
+| Quality Control | mt% < 10%, genes/cell: 200–2500 | Thresholds determined empirically from QC distribution plots; mt% cutoff reflects fresh sample origin |
+| Preprocessing | CPM normalization (1e4), log1p, HVG selection | Standard preprocessing for droplet-based data; raw log-normalized counts preserved in `adata.raw` for DE |
+| Dimensionality Reduction | PCA (50 PCs computed, 30 used) → UMAP | 30 PCs selected based on elbow plot variance inflection point |
+| Clustering | Leiden (resolution=0.6, igraph backend) | Tested range 0.4–0.8; 0.6 balanced cluster granularity without over-splitting T-cell compartment |
+| Annotation | Wilcoxon rank-sum test on raw counts | Manual assignment based on canonical markers (Zheng et al., 2017; Stuart et al., 2019) |
+| Subclustering | T-cell subset re-analysis | Full preprocessing re-run on T-cell subset to capture naive/memory/effector states |
 
-## 🧬 Biological Context
+## Key Results
 
-**Peripheral Blood Mononuclear Cells (PBMCs)** are a heterogeneous population of immune cells critical for adaptive and innate immunity. They include:
-
-- **T cells** (CD4+, CD8+) - Adaptive immunity
-- **B cells** - Antibody production
-- **Natural Killer (NK) cells** - Innate immunity
-- **Monocytes** (classical CD14+ and non-classical FCGR3A+) - Phagocytosis
-- **Dendritic cells** - Antigen presentation
-- **Platelets** - Coagulation
-
-> **Why scRNA-seq?** Bulk RNA-seq averages gene expression across millions of cells, masking rare cell populations and subtle transcriptional states. scRNA-seq resolves this heterogeneity by profiling individual cells at single-cell resolution.
-
----
-
-## ️ Pipeline Summary
-
-| Step | Method | Purpose |
-|------|--------|---------|
-| 1. Quality Control | Mitochondrial %, gene counts | Filter dead cells, doublets, low-quality cells |
-| 2. Preprocessing | Normalization, log1p, HVG selection | Prepare data for dimensionality reduction |
-| 3. Dimensionality Reduction | PCA (50 PCs) → UMAP (2D) | Remove noise, enable visualization |
-| 4. Clustering | Leiden algorithm (resolution=0.6) | Identify cell populations |
-| 5. Annotation | Marker gene detection (Wilcoxon) | Assign biological identities |
-| 6. Subclustering | T cell heterogeneity analysis | Reveal naive/memory/effector subsets |
-
----
-
-## 📊 Results
-
-### Quality Control
-
-![QC Violin Plot](figures/qc_violin.png)
-*Distribution of QC metrics: genes per cell, total counts, and mitochondrial percentage.*
-
-![QC Scatter Plot](figures/qc_scatter.png)
-*Scatter plot showing relationship between total counts and mitochondrial percentage.*
-
-### Dimensionality Reduction & Clustering
-
-![PCA Elbow Plot](figures/pca_elbow.png)
-*PCA variance ratio plot showing the elbow at ~30 PCs.*
-
-![UMAP with Markers](figures/umap_markers.png)
-*UMAP embedding colored by canonical marker genes.*
-
-![Leiden Clustering](figures/umap_leiden.png)
-*UMAP embedding colored by Leiden clusters (resolution=0.6).*
-
-### Cell Type Annotation
-
-![Annotated UMAP](figures/umap_annotated.png)
-*Final UMAP embedding with manually annotated cell types.*
-
-![Marker Gene Dotplot](figures/markers_dotplot.png)
-*Dot plot showing top marker genes for each cluster.*
-
-### T Cell Subclustering
-
-![T Cell Subclusters](figures/tcell_subclusters.png)
-*Subclustering of T cells revealing functional heterogeneity.*
-
----
-
-## 🧪 Key Findings
-
-We successfully identified **6 major cell populations** in the PBMC dataset:
+Analysis recovered 6 major immune cell populations consistent with established PBMC biology:
 
 | Cell Type | Proportion | Canonical Markers |
 |-----------|-----------|-------------------|
@@ -98,23 +32,39 @@ We successfully identified **6 major cell populations** in the PBMC dataset:
 | Monocytes/DCs | ~12% | SAT1, FTH1, TYROBP |
 | Other | ~5% | Various |
 
-> **Note:** The number of clusters depends on the resolution parameter. At resolution=0.6, we obtain 6 clusters that capture the major cell types. Higher resolution may reveal additional subpopulations.
+![Annotated UMAP](figures/umap_annotated.png)
+*Final UMAP embedding with manually annotated cell types.*
 
----
+![Marker Gene Dotplot](figures/markers_dotplot.png)
+*Top marker genes per cluster. Dot size indicates fraction of cells expressing the gene; color intensity indicates mean expression.*
 
-##  Requirements & Setup
+Additional QC, dimensionality reduction, and subclustering figures are available in the `figures/` directory. If the notebook does not render correctly on GitHub, please view it via [NBViewer](https://nbviewer.org/github/pooya-mosayebi-genetics/pbmc3k-scrnaseq-pipeline/blob/main/notebooks/01_PBMC3k_scRNAseq_Pipeline.ipynb).
 
-### Prerequisites
+## Limitations & Caveats
 
-- Python 3.10 or higher
-- Git
-- (Optional) Conda/Mamba for environment management
+- **Rare population merging:** Platelets and dendritic cells were partially merged with monocytes at resolution 0.6 due to low transcript counts and small population size. Resolving these would require targeted subclustering or higher sequencing depth.
+- **Manual annotation:** Cell type assignment relied on canonical marker genes rather than automated classifiers (e.g., CellTypist, scPoli). This approach is transparent but may miss novel or transitional states.
+- **No batch correction:** As this is a single-sample benchmark dataset, no integration or batch effect correction was applied. Multi-dataset analyses would require tools such as Harmony or scVI.
+- **Benchmark limitation:** PBMC3k is a well-characterized reference dataset. Performance on this data does not guarantee equivalent results on complex, noisy, or disease-state samples.
 
-### Installation
+## Development Notes & Technical Challenges
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/YourUsername/pbmc3k-scrnaseq-pipeline.git
-   cd pbmc3k-scrnaseq-pipeline
+During pipeline development, several practical issues were addressed to ensure robustness and reproducibility:
 
-**🎯 End of README**
+- **Memory overhead during scaling:** Zero-centering a sparse scRNA-seq matrix densifies it, causing excessive RAM usage. Setting `zero_center=False` in `sc.pp.scale` preserves sparsity without affecting PCA performance when using truncated SVD.
+- **Deprecated plotting parameters:** Scanpy's `save` argument in plotting functions is being phased out. All figures are now saved using `plt.savefig()` after `show=False` to ensure compatibility with future releases and finer control over DPI and bounding boxes.
+- **Label-dependent validation failure:** Initial sanity checks relied on exact string matching for cell type proportions, which broke when annotation labels were adjusted. This was replaced by a marker-based validation approach (CD3D for T cells, LYZ for monocytes, MS4A1 for B cells) that verifies biological composition independently of manual naming conventions.
+- **Subclustering data leakage:** Re-running normalization on already log-transformed data distorted variance structure. T cells are now extracted directly from `adata.raw` to preserve the correct distribution before subset-specific HVG selection and scaling.
+
+## Requirements & Setup
+
+- Python ≥ 3.10
+- Dependencies listed in `requirements.txt`
+
+```bash
+git clone https://github.com/pooya-mosayebi-genetics/pbmc3k-scrnaseq-pipeline.git
+cd pbmc3k-scrnaseq-pipeline
+python -m venv venv
+source venv/bin/activate  # Windows: .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+jupyter notebook notebooks/01_PBMC3k_scRNAseq_Pipeline.ipynb
